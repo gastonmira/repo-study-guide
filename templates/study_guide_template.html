@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{PROJECT_NAME}} — Study Guide</title>
+
+  <!-- Syntax highlighting (CDN with graceful degradation) -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css">
+  <script defer
+          src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+
+  <!-- Mermaid diagrams -->
+  <script type="module">
+    try {
+      const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs')).default;
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    } catch (e) {
+      document.querySelectorAll('.mermaid').forEach(el => {
+        el.innerHTML = '<em style="color:#888">[Mermaid unavailable offline — see architecture.mmd]</em>';
+      });
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0e1116;
+      --bg-elev: #161b22;
+      --bg-code: #1e1e1e;
+      --fg: #e6e6e6;
+      --fg-dim: #9aa4b2;
+      --accent: #58a6ff;
+      --border: #30363d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+    }
+    nav {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
+      padding: 24px 20px;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    nav h2 { margin-top: 0; font-size: 0.85rem; text-transform: uppercase; color: var(--fg-dim); letter-spacing: 1px; }
+    nav ul { list-style: none; padding: 0; margin: 0; }
+    nav li { margin: 8px 0; }
+    nav a { color: var(--fg); text-decoration: none; font-size: 0.95rem; display: block; padding: 6px 10px; border-radius: 4px; }
+    nav a:hover, nav a.active { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+
+    main { margin-left: 260px; padding: 40px 48px; max-width: 960px; }
+    h1, h2, h3 { color: #fff; line-height: 1.3; }
+    h1 { font-size: 2.2rem; margin-bottom: 8px; }
+    h2 { font-size: 1.5rem; margin-top: 48px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.15rem; margin-top: 24px; }
+    p, li { color: var(--fg); }
+
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 12px;
+      background: var(--accent); color: #fff; font-size: 0.8rem; font-weight: 600;
+      margin-right: 8px;
+    }
+    .meta { color: var(--fg-dim); font-size: 0.9rem; margin-bottom: 24px; }
+
+    pre {
+      background: var(--bg-code); padding: 16px; border-radius: 6px; overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+    code { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-size: 0.9rem; }
+    p code, li code { background: var(--bg-code); padding: 2px 6px; border-radius: 3px; color: #ffa657; }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    th { color: var(--fg-dim); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+    td code { color: #ffa657; }
+
+    .mermaid { background: var(--bg-elev); padding: 24px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+
+    footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--fg-dim); font-size: 0.85rem; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      nav { position: static; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      main { margin-left: 0; padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h2>Contents</h2>
+    <ul id="toc"></ul>
+  </nav>
+
+  <main>
+    <h1>{{PROJECT_NAME}}</h1>
+    <p class="meta"><span class="badge">{{PROJECT_TYPE}}</span> Generated {{GENERATED_AT}} · commit <code>{{COMMIT_HASH}}</code></p>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>{{OVERVIEW}}</p>
+    </section>
+
+    <section id="purpose">
+      <h2>Purpose</h2>
+      <p>{{PURPOSE}}</p>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+      <div class="mermaid">
+{{MERMAID_DIAGRAM}}
+      </div>
+    </section>
+
+    <section id="step-by-step">
+      <h2>Step-by-Step Guide</h2>
+      {{STEP_BY_STEP}}
+    </section>
+
+    <section id="core-modules">
+      <h2>Core Modules</h2>
+      <table>
+        <thead><tr><th>File</th><th>Role</th></tr></thead>
+        <tbody>
+          {{CORE_MODULES}}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="minimal-example">
+      <h2>Minimal Example</h2>
+      <pre><code>{{MINIMAL_EXAMPLE}}</code></pre>
+    </section>
+
+    <section id="local-setup">
+      <h2>Local Setup</h2>
+      <pre><code>{{LOCAL_SETUP}}</code></pre>
+    </section>
+
+    <footer>
+      <p>Generated by <a href="https://github.com/gastonmira/repo-study-guide" style="color: var(--accent);">repo-study-guide</a> skill · {{GENERATED_AT}}</p>
+    </footer>
+  </main>
+
+  <script>
+    // Auto-generate TOC from <section> headings
+    const toc = document.getElementById('toc');
+    document.querySelectorAll('main section[id]').forEach(sec => {
+      const h2 = sec.querySelector('h2');
+      if (!h2) return;
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '#' + sec.id;
+      a.textContent = h2.textContent;
+      li.appendChild(a);
+      toc.appendChild(li);
+    });
+
+    // Scrollspy: highlight current section in TOC
+    const links = toc.querySelectorAll('a');
+    const sections = document.querySelectorAll('main section[id]');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+
+    // Trigger highlight.js if loaded
+    if (window.hljs) window.addEventListener('load', () => hljs.highlightAll());
+  </script>
+</body>
+</html>

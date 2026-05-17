@@ -1,0 +1,11 @@
+graph TD
+    User[User / Terminal] -->|invokes| CLI[cli.py: argparse entry]
+    CLI -->|parses args| Config[config.py: load settings]
+    CLI -->|dispatches| Commands{Command router}
+    Commands -->|fetch| Fetcher[fetcher.py: HTTP client]
+    Commands -->|transform| Parser[parser.py: data cleanup]
+    Commands -->|persist| Storage[storage.py: SQLite]
+    Fetcher -->|JSON| Parser
+    Parser --> Storage
+    Storage -->|read| Reporter[reporter.py: render output]
+    Reporter -->|stdout / file| User
