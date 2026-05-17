@@ -15,8 +15,10 @@
   <script type="module">
     try {
       const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs')).default;
-      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+      mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+      await mermaid.run({ querySelector: '.mermaid' });
     } catch (e) {
+      console.error('Mermaid failed:', e);
       document.querySelectorAll('.mermaid').forEach(el => {
         el.innerHTML = '<em style="color:#888">[Mermaid unavailable offline — see architecture.mmd]</em>';
       });
