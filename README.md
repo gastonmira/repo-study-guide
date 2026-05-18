@@ -6,6 +6,8 @@ Drop it on an unfamiliar codebase and get a one-page visual onboarding doc: over
 
 Tested with Codex and Claude Code.
 
+![Study guide preview](examples/sample-output/study-guide-preview.png)
+
 ## What it produces
 
 ```
