@@ -5,7 +5,7 @@ description: Analyze any repository and generate a self-contained dark-themed HT
 
 # Repo Study Guide Skill
 
-Universal instruction set to analyze any repository and produce a high-quality, self-contained HTML study guide plus an architecture diagram.
+Universal instruction set to analyze any repository and produce a high-quality, self-contained HTML study guide plus an architecture diagram. Compatible with Claude Code, Codex, and other code agents that can read this skill and bundled template.
 
 ## When to use
 
@@ -25,16 +25,16 @@ Trigger this skill when the user:
 
 Goal: build a mental model in the minimum number of reads.
 
-- **Scan tree** — use `Bash` (`ls -la`, `find . -maxdepth 3 -type f`) to map the root and the obvious source folders (`src/`, `lib/`, `app/`, `pkg/`, `cmd/`, etc.).
+- **Scan tree** — use the available shell (`ls -la`, `find . -maxdepth 3 -type f`, or `rg --files` when available) to map the root and the obvious source folders (`src/`, `lib/`, `app/`, `pkg/`, `cmd/`, etc.).
 - **Identity files** — read in parallel: `README.md`, `package.json`, `pyproject.toml`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, `Gemfile`.
 - **Type detection** — classify as one of: CLI, Web App, Library/SDK, ML/Data project, Monorepo, Infra/IaC.
-- **For large repos (>500 files)** — delegate exploration to a subagent with `subagent_type: Explore` to avoid context bloat. Ask it for: entry points, top 10 files by import-fan-in, and the dependency graph at module level.
+- **For large repos (>500 files)** — when the environment supports subagents or explorer agents, delegate bounded exploration to avoid context bloat. Ask for: entry points, top 10 files by import-fan-in, and the dependency graph at module level.
 
 ### 2. Analysis phase
 
 - **Entry point** — locate `main.*`, `index.*`, `app.*`, `cli.*`, `__main__.py`, or the `"main"`/`"bin"` field in `package.json`.
 - **Data flow** — trace one realistic input from entry → core logic → output. Note each module touched.
-- **Core logic** — identify the 3–7 files that contain the business logic. Use `grep -r` for exported symbols, route definitions, command handlers, or model classes.
+- **Core logic** — identify the 3–7 files that contain the business logic. Prefer `rg` for exported symbols, route definitions, command handlers, or model classes; fall back to `grep`/`find` if `rg` is unavailable.
 - **External surface** — APIs exposed, CLI commands, env vars, config files.
 
 ### Edge cases
@@ -81,11 +81,11 @@ Goal: build a mental model in the minimum number of reads.
 
 - [ ] `<output_dir>/study_guide.html` exists and opens in a browser without console errors.
 - [ ] `<output_dir>/architecture.mmd` parses (sanity check: balanced brackets, no empty graph).
-- [ ] All `{{PLACEHOLDERS}}` replaced — `grep -c '{{' study_guide.html` returns `0`.
+- [ ] All `{{PLACEHOLDERS}}` replaced — `rg -c '{{' study_guide.html` returns no matches, or `grep -c '{{' study_guide.html` returns `0`.
 - [ ] Sidebar TOC has working anchors for every `<section>`.
 - [ ] Mermaid block renders (if CDN unreachable, fallback message is visible).
 
 ## Activation Trigger
 
-- Manual: `/skill repo-study-guide`
+- Manual: `$repo-study-guide` in Codex, `/skill repo-study-guide` in Claude Code, or the host agent's explicit skill invocation syntax.
 - Contextual: "Analyze this repo", "Generate a study guide", "Explain this codebase", "Onboard me to this project".

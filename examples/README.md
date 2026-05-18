@@ -11,8 +11,7 @@ This folder contains a sample run of the `repo-study-guide` skill against a smal
 
 ```
 # inside the target repo
-> /skill repo-study-guide
-> analyze this repo
+> analyze this repo and generate a study guide
 ```
 
 The skill ran the three phases (Exploration → Analysis → Artifact Generation) described in `../SKILL.md` and wrote both files to `docs/`. They were then copied here.
@@ -23,6 +22,8 @@ To regenerate against your own repo:
 
 ```bash
 cd /path/to/your/repo
-# launch claude code, then:
+# launch Claude Code, Codex, or another agent with the skill installed, then:
 > analyze this repo and generate a study guide
 ```
+
+In Codex, you can explicitly mention `$repo-study-guide`. In Claude Code, you can explicitly invoke `/skill repo-study-guide`.

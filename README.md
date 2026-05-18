@@ -1,8 +1,10 @@
 # repo-study-guide
 
-A Claude Code skill that analyzes any repository and generates a self-contained, dark-themed HTML study guide with an architecture diagram.
+A dual Claude Code + Codex skill that analyzes any repository and generates a self-contained, dark-themed HTML study guide with an architecture diagram.
 
 Drop it on an unfamiliar codebase and get a one-page visual onboarding doc: overview, purpose, data flow, core modules, minimal runnable example, and a Mermaid architecture diagram — all in a single HTML file.
+
+Tested with Codex and Claude Code.
 
 ## What it produces
 
@@ -16,19 +18,39 @@ The HTML embeds Mermaid + highlight.js from CDN with graceful offline degradatio
 
 ## Installation
 
-### As a Claude Code skill (recommended)
+### As a skill for Claude Code or Codex
+
+For Claude Code:
 
 ```bash
 git clone https://github.com/gastonmira/repo-study-guide.git ~/.claude/skills/repo-study-guide
 ```
 
-Then in any Claude Code session, the skill auto-loads. Trigger it with:
+For Codex:
+
+```bash
+git clone https://github.com/gastonmira/repo-study-guide.git ~/.codex/skills/repo-study-guide
+```
+
+Then in either agent, the skill can be triggered naturally:
+
+```
+analyze this repo and generate a study guide
+```
+
+In Codex, you can also invoke it explicitly with:
+
+```
+$repo-study-guide
+```
+
+In Claude Code, you can also invoke it explicitly with:
 
 ```
 /skill repo-study-guide
 ```
 
-Or just ask naturally: *"analyze this repo"*, *"generate a study guide"*, *"explain this codebase"*.
+Or use related prompts like *"generate a study guide"*, *"explain this codebase"*, or *"onboard me to this project"*.
 
 ### As a reference for other agents (Cursor, Aider, Hermes, custom)
 
@@ -73,7 +95,7 @@ To change the output directory, ask the skill explicitly: *"generate the study g
 
 - **Monorepos** — generates one guide per workspace under `docs/<package>/`.
 - **No README** — infers purpose from package metadata; marks as `(inferred)`.
-- **Large repos (>500 files)** — delegates exploration to an `Explore` subagent.
+- **Large repos (>500 files)** — delegates exploration to a subagent/explorer when the host agent supports it.
 - **Empty / scaffolding repos** — produces a minimal guide with next-step suggestions.
 
 ## Examples
