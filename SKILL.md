@@ -23,7 +23,7 @@ Trigger this skill when the user:
 
 ### 0. MCP preflight
 
-Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP. See [`reference/mcp-usage.md`](reference/mcp-usage.md) for the full preflight contract, tool catalog, and fallbacks.
+Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP by calling `mcp__code-review-graph__list_graph_stats_tool`. If it is unavailable or returns a hard failure, continue with the shell fallbacks in steps 1–2. See [`reference/mcp-usage.md`](reference/mcp-usage.md) for the full preflight contract, stale/empty graph handling, tool catalog, and fallbacks.
 
 ### 1. Exploration phase
 
