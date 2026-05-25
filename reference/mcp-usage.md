@@ -34,9 +34,10 @@ without first attempting the graph is a skill violation. Use
 `get_minimal_context_tool` / `get_review_context_tool` to pull only the
 snippets the template actually needs.
 
-When the MCP is available, the Hub rank column and Communities block in the
+When the MCP is available, the Hub rank column and graph summary note in the
 generated HTML must be populated from graph data (not inferred from folder
-names).
+names). The graph summary must define what nodes, edges, communities,
+cohesion, and cross-community edges mean before listing raw values.
 
 ## Tool catalog — when to use which
 
@@ -58,5 +59,6 @@ names).
 - If the MCP was available, at least `list_graph_stats_tool` + one of
   `get_architecture_overview_tool` / `get_hub_nodes_tool` /
   `list_communities_tool` were invoked during exploration.
-- Hub rank column and Communities block in the HTML are populated from graph
-  data when the MCP was available.
+- Hub rank column and graph summary note in the HTML are populated from graph
+  data when the MCP was available, with a plain-English explanation of the
+  metrics.

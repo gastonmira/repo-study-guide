@@ -58,7 +58,7 @@ Goal: build a mental model in the minimum number of reads.
 
 - **Entry point** — use `mcp__code-review-graph__list_flows_tool`, then `mcp__code-review-graph__get_flow_tool` on the main flow. Fallback (MCP unavailable): locate `main.*`, `index.*`, `app.*`, `cli.*`, `__main__.py`, or the `"main"`/`"bin"` field in `package.json`.
 - **Data flow** — trace one realistic input from entry → core logic → output via `get_flow_tool`; only `Read` the specific files it surfaces.
-- **Core logic** (3–7 files) — use `mcp__code-review-graph__get_hub_nodes_tool` (top files by in/out-degree) and `mcp__code-review-graph__list_communities_tool` to group related modules. Their output feeds the Hub rank column and Communities section of the template (see step 3b). Fallback: `rg` for exported symbols, route definitions, command handlers, or model classes.
+- **Core logic** (3–7 files) — use `mcp__code-review-graph__get_hub_nodes_tool` (top files by in/out-degree) and `mcp__code-review-graph__list_communities_tool` to group related modules. Their output feeds the Hub rank column and graph summary note in the template (see step 3b). Fallback: `rg` for exported symbols, route definitions, command handlers, or model classes.
 - **Targeted symbol/route lookup** — use `mcp__code-review-graph__semantic_search_nodes_tool` before `rg`. Fall back to `rg` only for non-indexed languages or empty results.
 - **Reading snippets for the template** — use `mcp__code-review-graph__get_minimal_context_tool` or `get_review_context_tool` to pull only the lines needed for `{{MINIMAL_EXAMPLE}}` and `{{CORE_MODULES}}` rather than full-file `Read` calls.
 - **External surface** — APIs exposed, CLI commands, env vars, config files. Combine `semantic_search_nodes_tool` (handlers, routes) with the usual config-file reads.
@@ -73,6 +73,7 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
 
 - Create a Mermaid `graph TD` (for component/module relationships) or `sequenceDiagram` (for request/data flow).
 - Keep it to **≤15 nodes** — high-level only, no leaf files.
+- Prefer readable clustered diagrams: use `subgraph` blocks when the repo has distinct install-time, runtime, integration, test, or data layers; use short human labels; avoid numeric details as primary nodes; and choose `graph LR` when it reduces edge crossings.
 - Save to `<output_dir>/architecture.mmd`.
 
 #### 3b. HTML study guide
@@ -82,13 +83,15 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
   - `{{PROJECT_NAME}}`
   - `{{PROJECT_TYPE}}` (CLI / Web App / Library / etc.)
   - `{{OVERVIEW}}` — 2–3 sentences, what it does.
+  - `{{GRAPH_SUMMARY}}` — if graph data is available, a `<p class="note">` paragraph that explains the graph signals in plain English before listing values. It must define the metrics in the generated text: "nodes" are indexed code entities such as files/functions/classes, "edges" are detected relationships such as imports/calls/containment, "communities" are clusters of related code, "cohesion" is how tightly connected a cluster is, and "cross-community edges" are detected links between clusters. Include only the most useful 2–4 values or community names, and phrase surprising values (for example `0` cross-community edges) as "the graph reported" rather than as an absolute architectural fact. If graph data is unavailable, replace with an empty string.
   - `{{PURPOSE}}` — why it exists, problem solved.
   - `{{STEP_BY_STEP}}` — ordered list tracing the data flow.
   - `{{CORE_MODULES}}` — table rows: file path · 1-sentence role. **When the MCP is available**, add a **Hub rank** column populated from `get_hub_nodes_tool` (in/out-degree). Do not infer hubs from folder structure.
-  - **Communities block** — when `list_communities_tool` is available, include a short paragraph or sub-table inside `{{OVERVIEW}}` or `{{CORE_MODULES}}` with: community count, cohesion scores, and cross-community edge count. This is the observable signal that the graph was used.
+  - **Communities signal** — when `list_communities_tool` is available, summarize community count, cohesion scores, and cross-community edge count in `{{GRAPH_SUMMARY}}`. This is the observable signal that the graph was used.
   - `{{MINIMAL_EXAMPLE}}` — smallest runnable snippet.
   - `{{LOCAL_SETUP}}` — install + run commands.
   - `{{MERMAID_DIAGRAM}}` — inline contents of `architecture.mmd`.
+  - `{{ARCHITECTURE_EXPLANATION}}` — a short paragraph or `<p class="note">` under the diagram explaining how to read it: the main entry points, the direction of the flow, what each cluster/layer represents, and which arrows are install-time vs runtime vs integration/test relationships. If the diagram is trivial, replace with an empty string.
   - `{{GENERATED_AT}}` — ISO date.
   - `{{COMMIT_HASH}}` — output of `git rev-parse --short HEAD` if it's a git repo, else empty.
 - Save to `<output_dir>/study_guide.html`.
@@ -110,7 +113,7 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
 - [ ] Sidebar TOC has working anchors for every `<section>`.
 - [ ] Mermaid block renders (if CDN unreachable, fallback message is visible).
 - [ ] If `code-review-graph` MCP was available, at least `list_graph_stats_tool` + one of `get_architecture_overview_tool` / `get_hub_nodes_tool` / `list_communities_tool` were invoked during exploration.
-- [ ] When the MCP was available, the Hub rank column and Communities block in the HTML are populated from graph data (not inferred from folder names).
+- [ ] When the MCP was available, the Hub rank column and graph summary note in the HTML are populated from graph data (not inferred from folder names) and explain the metrics in plain English.
 
 ## Activation Trigger
 
