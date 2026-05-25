@@ -21,15 +21,9 @@ Trigger this skill when the user:
 
 ## Execution Steps
 
-### 0. MCP preflight (MANDATORY when available)
+### 0. MCP preflight
 
-**Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, you MUST attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP.** Reading project metadata (`README.md`, `package.json`, `pyproject.toml`, etc.) is allowed in parallel — the graph does not cover those.
-
-1. Call `mcp__code-review-graph__list_graph_stats_tool`. If it responds (even with `Nodes: 0` / `Last updated: never`), the MCP is available and **must be used** for steps 1–2.
-2. If the stats show `Nodes: 0` or stale data, call `mcp__code-review-graph__build_or_update_graph_tool` (idempotent; incremental updates run in <2s) before continuing.
-3. Only if the tool errors out, is not registered, or returns a hard failure, fall back to the shell-based flow described inline in steps 1–2.
-
-Skipping this preflight when the MCP is available is a **skill violation** — the resulting study guide will be missing hub ranks, community structure, and impact data that the graph provides and the template expects.
+Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP by calling `mcp__code-review-graph__list_graph_stats_tool`. If it is unavailable or returns a hard failure, continue with the shell fallbacks in steps 1–2. See [`reference/mcp-usage.md`](reference/mcp-usage.md) for the full preflight contract, stale/empty graph handling, tool catalog, and fallbacks.
 
 ### 1. Exploration phase
 
@@ -55,7 +49,7 @@ Goal: build a mental model in the minimum number of reads.
   Skip steps 1 and 2 below and feed the brief directly into step 3. Only re-open specific files later if the template demands a snippet you don't have.
 
 - **If ≤500 files → inline exploration** (continue with the steps below):
-  - **Architecture (MCP-first, mandatory if available)**: call `mcp__code-review-graph__get_architecture_overview_tool` for the high-level layout (modules, layers, key boundaries). This replaces manual folder scanning.
+  - **Architecture**: call `mcp__code-review-graph__get_architecture_overview_tool` for the high-level layout (modules, layers, key boundaries). This replaces manual folder scanning.
   - **Shell fallback** (only if MCP unavailable): `ls -la`, `find . -maxdepth 3 -type f`, or `rg --files` to map the root and obvious source folders (`src/`, `lib/`, `app/`, `pkg/`, `cmd/`, etc.).
   - **Identity files** — read in parallel: `README.md`, `package.json`, `pyproject.toml`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, `Gemfile`. (Always needed — the graph does not capture project metadata.)
   - **Type detection** — classify as one of: CLI, Web App, Library/SDK, ML/Data project, Monorepo, Infra/IaC. Use the architecture overview + identity files together.
@@ -64,17 +58,14 @@ Goal: build a mental model in the minimum number of reads.
 
 - **Entry point** — use `mcp__code-review-graph__list_flows_tool`, then `mcp__code-review-graph__get_flow_tool` on the main flow. Fallback (MCP unavailable): locate `main.*`, `index.*`, `app.*`, `cli.*`, `__main__.py`, or the `"main"`/`"bin"` field in `package.json`.
 - **Data flow** — trace one realistic input from entry → core logic → output via `get_flow_tool`; only `Read` the specific files it surfaces.
-- **Core logic** (3–7 files) — use `mcp__code-review-graph__get_hub_nodes_tool` (top files by in/out-degree) and `mcp__code-review-graph__list_communities_tool` to group related modules. **Both calls are mandatory when the MCP is available** — their output feeds the Hub rank column and Communities section of the template (see step 3b). Fallback: `rg` for exported symbols, route definitions, command handlers, or model classes.
+- **Core logic** (3–7 files) — use `mcp__code-review-graph__get_hub_nodes_tool` (top files by in/out-degree) and `mcp__code-review-graph__list_communities_tool` to group related modules. Their output feeds the Hub rank column and Communities section of the template (see step 3b). Fallback: `rg` for exported symbols, route definitions, command handlers, or model classes.
 - **Targeted symbol/route lookup** — use `mcp__code-review-graph__semantic_search_nodes_tool` before `rg`. Fall back to `rg` only for non-indexed languages or empty results.
 - **Reading snippets for the template** — use `mcp__code-review-graph__get_minimal_context_tool` or `get_review_context_tool` to pull only the lines needed for `{{MINIMAL_EXAMPLE}}` and `{{CORE_MODULES}}` rather than full-file `Read` calls.
 - **External surface** — APIs exposed, CLI commands, env vars, config files. Combine `semantic_search_nodes_tool` (handlers, routes) with the usual config-file reads.
 
 ### Edge cases
 
-- **Monorepos** — detect `workspaces` (`package.json`), `pnpm-workspace.yaml`, Turborepo, Nx, Cargo workspaces. When the graph is available, `list_communities_tool` often surfaces logical packages as distinct communities — cross-reference with workspace config. Generate one study guide *per workspace package* under `docs/<package>/study_guide.html`, plus a root index.
-- **No README** — derive purpose from package metadata, top-level comments, and folder names. Mark the "Purpose" section as `(inferred)`.
-- **Empty / scaffolding only** — produce a minimal guide noting the repo is a scaffold; suggest next steps instead of forcing analysis.
-- **Unknown language** — fall back to file-extension stats and any build configs found.
+See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos without a README, scaffolds, and non-indexed languages.
 
 ### 3. Artifact Generation
 
@@ -109,7 +100,7 @@ Goal: build a mental model in the minimum number of reads.
 - **Zero fluff** — every sentence must help a first-time reader. No filler.
 - **Self-contained** — HTML must open offline (CDN scripts are okay only if the template ships fallbacks).
 - **Reproducible** — same repo state → same output. Don't invent details; mark inferences as such.
-- **MCP-first when available** — if `code-review-graph` tools respond, they **MUST** be used for structural exploration. Falling back to `Read`/`Grep`/`find` without first attempting the graph is a skill violation. Use `get_minimal_context_tool` / `get_review_context_tool` to pull only the snippets the template actually needs.
+- **MCP-first when available** — see [`reference/mcp-usage.md`](reference/mcp-usage.md).
 
 ## Final checklist (must pass before reporting done)
 
