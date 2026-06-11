@@ -1,7 +1,7 @@
 interface:
   display_name: "Repo Study Guide"
-  short_description: "Generate visual repository onboarding guides"
-  default_prompt: "Use $repo-study-guide to analyze this repository and generate a study guide."
+  short_description: "Generate and incrementally update visual repository onboarding guides"
+  default_prompt: "Use $repo-study-guide to analyze this repository and generate a study guide; if a guide already exists, run existing-guide detection and follow the skill's mode-selection rules."
 
 policy:
   allow_implicit_invocation: true

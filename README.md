@@ -77,15 +77,39 @@ The skill will:
 
 Open the HTML in any browser — no build step.
 
+### Incremental updates
+
+Re-running the skill on a repo that already has a guide does not re-analyze
+everything. The generated HTML embeds the commit it was built from
+(`<meta name="repo-study-guide-commit">`), so the skill:
+
+1. Detects the existing `docs/study_guide.html` and reads the embedded commit.
+2. If nothing changed since then, reports the guide is up to date and stops.
+3. If the repo changed, asks whether you want an **incremental update** or a
+   full regeneration. (Say *"update the guide"* or *"regenerate from scratch"*
+   in your prompt to skip the question.)
+
+An incremental update re-explores only the changed files, copies unaffected
+sections verbatim from the previous HTML, and adds a **What Changed** section
+summarizing the delta since the last guide (latest delta only — full history
+lives in git).
+
+For non-interactive Codex runs, include *"update the guide"* in the prompt to
+force incremental mode, or *"regenerate from scratch"* to force a full rebuild.
+If no mode is provided and the agent cannot ask, it falls back to full
+regeneration because that path is always safe.
+
 ## Output sections
 
 | Section | Content |
 |---|---|
 | Overview | What the project does (2–3 sentences) |
+| What Changed | Delta since the previous guide (update mode only) |
 | Purpose | Why it exists / problem it solves |
 | Architecture | Rendered Mermaid diagram |
 | Step-by-Step | Ordered data-flow trace |
 | Core Modules | Table of key files + 1-sentence role |
+| Onboarding Path | Suggested reading order + 2–3 verifiable first tasks |
 | Minimal Example | Smallest runnable snippet |
 | Local Setup | Install + run commands |
 

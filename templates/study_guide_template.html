@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="repo-study-guide-commit" content="{{COMMIT_HASH}}">
+  <meta name="repo-study-guide-generated" content="{{GENERATED_AT}}">
   <title>{{PROJECT_NAME}} — Study Guide</title>
 
   <!-- Syntax highlighting (CDN with graceful degradation) -->
@@ -152,6 +154,8 @@
       {{GRAPH_SUMMARY}}
     </section>
 
+    {{WHAT_CHANGED}}
+
     <section id="purpose">
       <h2>Purpose</h2>
       <p>{{PURPOSE}}</p>
@@ -187,6 +191,21 @@
           {{CORE_MODULES}}
         </tbody>
       </table>
+    </section>
+
+    <section id="onboarding-path">
+      <h2>Onboarding Path</h2>
+      <h3>Suggested reading order</h3>
+      <table>
+        <thead><tr><th>#</th><th>File</th><th>Why</th><th>Est. time</th></tr></thead>
+        <tbody>
+          {{READING_ORDER}}
+        </tbody>
+      </table>
+      <h3>Your first tasks</h3>
+      <ol>
+        {{FIRST_TASKS}}
+      </ol>
     </section>
 
     <section id="minimal-example">

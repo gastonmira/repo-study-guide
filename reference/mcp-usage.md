@@ -61,6 +61,7 @@ values. When graph coverage is low, omit graph-derived hub ranks and
 | Step 2 — data flow                          | `get_flow_tool`                                     | One realistic input trace; only `Read` what it surfaces. |
 | Step 2 — core logic (3–7 files)             | `get_hub_nodes_tool`, `list_communities_tool`       | Feeds template only when graph coverage is representative. |
 | Step 2 — symbol / route lookup              | `semantic_search_nodes_tool`                        | Use before `rg`. Fall back to `rg` only on empty.    |
+| Step 2b — update mode                       | `detect_changes_tool`, `get_impact_radius_tool`     | Map changed files to affected modules/sections when available; otherwise fall back to `git diff` plus focused reads. |
 | Step 3b — snippets for the template         | `get_minimal_context_tool`, `get_review_context_tool` | Pull only the lines `{{MINIMAL_EXAMPLE}}` / `{{CORE_MODULES}}` need. |
 
 ## Final-checklist items related to the MCP
