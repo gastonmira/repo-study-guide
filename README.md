@@ -94,6 +94,11 @@ sections verbatim from the previous HTML, and adds a **What Changed** section
 summarizing the delta since the last guide (latest delta only — full history
 lives in git).
 
+For non-interactive Codex runs, include *"update the guide"* in the prompt to
+force incremental mode, or *"regenerate from scratch"* to force a full rebuild.
+If no mode is provided and the agent cannot ask, it falls back to full
+regeneration because that path is always safe.
+
 ## Output sections
 
 | Section | Content |
