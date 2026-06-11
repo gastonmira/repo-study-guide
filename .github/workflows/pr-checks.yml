@@ -1,0 +1,34 @@
+name: PR checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  content-checks:
+    name: Content & consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # Cache the Chromium that mermaid-cli (puppeteer) downloads so we don't
+      # re-fetch it on every run.
+      - name: Cache puppeteer browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}
+
+      - name: Run PR checks
+        run: bash scripts/pr-checks.sh
