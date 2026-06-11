@@ -165,7 +165,11 @@ elif ! command -v npx >/dev/null 2>&1; then
     info "npx not available — skipping Mermaid validation locally"
   fi
 else
-  if npx --yes @mermaid-js/mermaid-cli -i "$MMD" -o /tmp/arch.svg >/tmp/mmdc.log 2>&1; then
+  # CI runners can't use Chromium's sandbox, so render with --no-sandbox.
+  # Harmless locally. Passed via a puppeteer config file (-p).
+  PCFG="$(mktemp -t puppeteer.XXXXXX.json)"
+  printf '{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }' > "$PCFG"
+  if npx --yes @mermaid-js/mermaid-cli -p "$PCFG" -i "$MMD" -o /tmp/arch.svg >/tmp/mmdc.log 2>&1; then
     pass "$MMD renders cleanly"
   else
     # Only skip when Chromium genuinely cannot be *launched* (not installed).
