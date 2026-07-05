@@ -33,6 +33,11 @@ Using low-coverage graph data as if it represented the whole repo is also a
 skill violation; it can produce misleading hubs, communities, and architecture
 summaries.
 
+If a graph tool listed below is not exposed by the current client, treat that
+specific tool as unavailable and use the documented shell fallback. Do not fail
+the generation solely because a specialized graph tool is missing after the
+preflight succeeds.
+
 ## Quality bar
 
 **MCP-first when useful** — always try the graph preflight first, then use graph
@@ -41,12 +46,14 @@ is correct when the MCP is unavailable, the graph is empty/stale, or graph
 coverage is too narrow to describe the repo. Use `get_minimal_context_tool` /
 `get_review_context_tool` only for targeted snippets after coverage is known.
 
-When representative MCP graph data is available, the Hub rank column and graph
-summary note in the generated HTML must be populated from graph data (not
-inferred from folder names). The graph summary must define what nodes, edges,
-communities, cohesion, and cross-community edges mean before listing raw
-values. When graph coverage is low, omit graph-derived hub ranks and
-`{{GRAPH_SUMMARY}}` rather than presenting incomplete data as architecture.
+When representative MCP graph data is available, the graph summary note in the
+generated HTML must be populated from graph data (not inferred from folder
+names). The Hub rank column is present only when representative graph hub data
+is available; otherwise Core Modules remains a 2-column table. The graph
+summary must define what nodes, edges, communities, cohesion, and
+cross-community edges mean before listing raw values. When graph coverage is
+low, omit graph-derived hub ranks and `{{GRAPH_SUMMARY}}` rather than
+presenting incomplete data as architecture.
 
 ## Tool catalog — when to use which
 
@@ -69,6 +76,6 @@ values. When graph coverage is low, omit graph-derived hub ranks and
 - `list_graph_stats_tool` was the first graph preflight call.
 - Graph file coverage was compared with the repo file count before using graph
   architecture, hubs, communities, or summaries.
-- Hub rank column and graph summary note in the HTML are populated only when
-  representative graph data was available, with a plain-English explanation of
-  the metrics.
+- Hub rank column is present only when representative graph hub data was
+  available; graph summary note is populated only when representative graph
+  data was available, with a plain-English explanation of the metrics.

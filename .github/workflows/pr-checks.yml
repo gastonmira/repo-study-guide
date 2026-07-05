@@ -16,11 +16,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
+          cache: npm
 
       # Cache the Chromium that mermaid-cli (puppeteer) downloads so we don't
       # re-fetch it on every run.
@@ -31,4 +27,6 @@ jobs:
           key: puppeteer-${{ runner.os }}
 
       - name: Run PR checks
-        run: bash scripts/pr-checks.sh
+        run: |
+          npm ci
+          npm run check
