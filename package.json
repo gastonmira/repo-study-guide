@@ -1,0 +1,13 @@
+{
+  "name": "repo-study-guide",
+  "private": true,
+  "scripts": {
+    "check": "bash scripts/pr-checks.sh",
+    "validate:html": "node scripts/validate-generated-html.mjs"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.16.0",
+    "js-yaml": "5.2.1",
+    "parse5": "8.0.1"
+  }
+}

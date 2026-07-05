@@ -23,11 +23,11 @@ Trigger this skill when the user:
 
 ### 0. MCP preflight
 
-Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP by calling `mcp__code-review-graph__list_graph_stats_tool`. If it is unavailable or returns a hard failure, continue with the shell fallbacks in steps 1–2. See [`reference/mcp-usage.md`](reference/mcp-usage.md) for the full preflight contract, stale/empty graph handling, tool catalog, and fallbacks.
+Before any `Read`, `Grep`, `Glob`, or `find` call for code exploration, attempt the [`code-review-graph`](https://github.com/tirth8205/code-review-graph) MCP by calling `mcp__code-review-graph__list_graph_stats_tool`. If it is unavailable or returns a hard failure, continue with the shell fallbacks in steps 1–2. See [`reference/mcp-usage.md`](reference/mcp-usage.md) for the authoritative preflight contract, stale/empty graph handling, tool catalog, and fallbacks.
 
 ### 0b. Graph coverage gate
 
-After the preflight, check whether the graph is representative before using it for architecture, hubs, communities, or graph summary output. Treat the graph as **low coverage** when it indexes no files, only a tiny subset of the repo, or mostly test files. For low-coverage graphs, use shell/file exploration as the source of truth, omit `{{GRAPH_SUMMARY}}`, do not add Hub rank values from the graph, and mention the graph limitation only in the final response.
+After the preflight, compare graph file coverage with a shell file count before using graph output for architecture, hubs, communities, or summaries. Treat the graph as **low coverage** when it indexes no files, only a tiny subset of the repo, or mostly test files. For low-coverage graphs, use shell/file exploration as the source of truth, omit `{{GRAPH_SUMMARY}}`, use the 2-column Core Modules table, and mention the graph limitation only in the final response.
 
 ### 0c. Existing guide detection
 
@@ -47,9 +47,9 @@ Check whether `<output_dir>/study_guide.html` already exists before exploring.
 
 Goal: build a mental model in the minimum number of reads.
 
-- **Size probe (first)** — measure the repo before reading anything:
+- **Size probe (first)** — measure the repo before broad reading:
   - Run the shell file count even when the graph responds: `find . -type f -not -path './.git/*' -not -path './node_modules/*' -not -path './dist/*' -not -path './build/*' | wc -l`.
-  - Compare it with `mcp__code-review-graph__list_graph_stats_tool` from Step 0. If graph file coverage is clearly incomplete, mark the graph low coverage and use the shell count for the >500-file decision.
+  - Compare it with `mcp__code-review-graph__list_graph_stats_tool` from Step 0. If graph file coverage is clearly incomplete, mark the graph low coverage and use the shell count for the >500-file decision. Use additional graph tools only when the graph is representative and the current client exposes them; otherwise use shell/file fallbacks.
 - **If >500 files → delegate to a subagent (default)**. Spawn an `Explore` subagent so its context is discarded after the brief returns, keeping the main context lean. Use this prompt verbatim (substitute `<repo path>`):
 
   ```
@@ -67,18 +67,15 @@ Goal: build a mental model in the minimum number of reads.
   Skip steps 1 and 2 below and feed the brief directly into step 3. Only re-open specific files later if the template demands a snippet you don't have. If the host agent does not support subagents, run the same exploration brief inline with a bounded read budget: map the tree and identity files, identify likely entry points and hub candidates, and read no more than 20 files unless a required template field cannot be completed without one extra focused read.
 
 - **If ≤500 files → inline exploration** (continue with the steps below):
-  - **Architecture**: if graph coverage is representative, call `mcp__code-review-graph__get_architecture_overview_tool` for the high-level layout (modules, layers, key boundaries). If graph coverage is low or MCP is unavailable, use `ls -la`, `find . -maxdepth 3 -type f`, or `rg --files` to map the root and obvious source folders (`src/`, `lib/`, `app/`, `pkg/`, `cmd/`, etc.).
+  - **Architecture**: if graph coverage is representative, use available graph architecture/community tools for the high-level layout. If graph coverage is low, MCP is unavailable, or the needed graph tool is not exposed, use `ls -la`, `find . -maxdepth 3 -type f`, or `rg --files` to map the root and obvious source folders (`src/`, `lib/`, `app/`, `pkg/`, `cmd/`, etc.).
   - **Identity files** — read in parallel: `README.md`, `package.json`, `pyproject.toml`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, `Gemfile`. (Always needed — the graph does not capture project metadata.)
   - **Type detection** — classify as one of: CLI, Web App, Library/SDK, ML/Data project, Monorepo, Infra/IaC. Use the architecture overview + identity files together.
 
 ### 2. Analysis phase
 
-- **Entry point** — when graph coverage is representative, use `mcp__code-review-graph__list_flows_tool`, then `mcp__code-review-graph__get_flow_tool` on the main flow. Fallback (low coverage or MCP unavailable): locate `main.*`, `index.*`, `app.*`, `cli.*`, `__main__.py`, or the `"main"`/`"bin"` field in `package.json`.
-- **Data flow** — when graph coverage is representative, trace one realistic input from entry → core logic → output via `get_flow_tool`; only `Read` the specific files it surfaces. With low graph coverage, trace the flow from entry points, routes, handlers, commands, or package metadata using focused file reads.
-- **Core logic** (3–7 files) — when graph coverage is representative, use `mcp__code-review-graph__get_hub_nodes_tool` (top files by in/out-degree) and `mcp__code-review-graph__list_communities_tool` to group related modules. Their output feeds the Hub rank column and graph summary note in the template (see step 3b). When graph coverage is low or MCP is unavailable, use `rg` for exported symbols, route definitions, command handlers, or model classes and leave Hub rank blank or mark it as shell-derived context without graph ranks.
-- **Targeted symbol/route lookup** — when graph coverage is representative, use `mcp__code-review-graph__semantic_search_nodes_tool` before `rg`. Fall back to `rg` for low coverage, non-indexed languages, or empty graph results.
-- **Reading snippets for the template** — when graph coverage is representative, use `mcp__code-review-graph__get_minimal_context_tool` or `get_review_context_tool` to pull only the lines needed for `{{MINIMAL_EXAMPLE}}` and `{{CORE_MODULES}}` rather than full-file `Read` calls. With low graph coverage, use focused file reads.
-- **External surface** — APIs exposed, CLI commands, env vars, config files. When graph coverage is representative, combine `semantic_search_nodes_tool` (handlers, routes) with the usual config-file reads. With low graph coverage, use focused `rg` and config-file reads.
+- **Entry point and data flow** — when graph coverage is representative, use available graph flow tools to trace one realistic input from entry → core logic → output. Fallback: locate `main.*`, `index.*`, `app.*`, `cli.*`, `__main__.py`, routes, handlers, commands, or the `"main"`/`"bin"` field in `package.json`, then read focused files.
+- **Core logic** (3–7 files) — when representative graph hub/community data is available, use it for module selection, `{{GRAPH_SUMMARY}}`, and the optional Hub rank column. When graph coverage is low or the needed graph tools are unavailable, use `rg` for exported symbols, route definitions, command handlers, or model classes and omit Hub rank.
+- **Targeted lookup and snippets** — when representative graph search/context tools are available, use them before broad file reads. Otherwise use `rg` and focused file reads for APIs, CLI commands, env vars, config files, `{{MINIMAL_EXAMPLE}}`, and `{{CORE_MODULES}}`.
 
 ### 2b. Update mode (incremental)
 
@@ -122,8 +119,9 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
   - `{{WHAT_CHANGED}}` — in update mode, the complete What Changed section built in step 2b. In a full/initial generation, replace with an empty string (same pattern as `{{GRAPH_SUMMARY}}`).
   - `{{PURPOSE}}` — why it exists, problem solved.
   - `{{STEP_BY_STEP}}` — ordered list tracing the data flow.
-  - `{{CORE_MODULES}}` — table rows: file path · 1-sentence role. **When the MCP is available**, add a **Hub rank** column populated from `get_hub_nodes_tool` (in/out-degree). Do not infer hubs from folder structure.
-  - **Communities signal** — when `list_communities_tool` is available, summarize community count, cohesion scores, and cross-community edge count in `{{GRAPH_SUMMARY}}`. This is the observable signal that the graph was used.
+  - `{{CORE_MODULES_HEADER}}` — table header row. Use `<tr><th>File</th><th>Role</th></tr>` by default. Use `<tr><th>File</th><th>Role</th><th>Hub rank</th></tr>` only when representative graph hub data is available.
+  - `{{CORE_MODULES}}` — table rows matching `{{CORE_MODULES_HEADER}}`: file path · 1-sentence role · optional Hub rank. When present, Hub rank must come from graph hub data, not folder structure; use `#1 · in 4 · out 2` when in/out degree values exist, or `#1` when only ranking is available.
+  - **Communities signal** — when representative graph community data is available, summarize community count, cohesion scores, and cross-community edge count in `{{GRAPH_SUMMARY}}`. This is the observable signal that the graph was used.
   - `{{READING_ORDER}}` — table rows (`<tr>`) for the Onboarding Path: order number · file path (`<code>`) · one-line reason to read it · honest time estimate based on actual file size (e.g. "~10 min"). 4–7 files, ordered identity files → entry point → hubs. Use `get_hub_nodes_tool` for the ranking when graph coverage is representative; otherwise derive it from the step 1–2 exploration. Never list a file that does not exist in the repo.
   - `{{FIRST_TASKS}}` — 2–3 `<li>` items: small, real starter tasks anchored in existing code (run the main flow end-to-end with a different input, extend an existing command or option, write a test for a specific hub function). Each task ends with a verifiable done-criterion (e.g. "done when `tool --quiet` prints only results"). Never propose invented features or tasks that require context the guide does not provide.
   - `{{MINIMAL_EXAMPLE}}` — smallest runnable snippet.
@@ -133,6 +131,16 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
   - `{{GENERATED_AT}}` — ISO date.
   - `{{COMMIT_HASH}}` — output of `git rev-parse --short HEAD` if it's a git repo, else empty.
 - Save to `<output_dir>/study_guide.html`.
+
+#### 3c. Placeholder safety contract
+
+Treat generated content as untrusted until it fits this contract:
+
+- **Escaped text only**: `{{PROJECT_NAME}}`, `{{PROJECT_TYPE}}`, `{{OVERVIEW}}`, `{{PURPOSE}}`, `{{GENERATED_AT}}`, and `{{COMMIT_HASH}}`. Escape `<`, `>`, `&`, and quotes before inserting them into text or attributes.
+- **Literal code/text blocks**: `{{MINIMAL_EXAMPLE}}`, `{{LOCAL_SETUP}}`, and `{{MERMAID_DIAGRAM}}`. Insert them as literal text inside their existing containers; do not add HTML wrappers, scripts, event handlers, or unsafe URLs.
+- **Restricted structural HTML**: `{{GRAPH_SUMMARY}}`, `{{WHAT_CHANGED}}`, `{{STEP_BY_STEP}}`, `{{CORE_MODULES_HEADER}}`, `{{CORE_MODULES}}`, `{{READING_ORDER}}`, `{{FIRST_TASKS}}`, and `{{ARCHITECTURE_EXPLANATION}}`. Use only the tags needed by the template and generated guide: `p`, `span`, `ol`, `ul`, `li`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, `code`, `pre`, `a`, `em`, `strong`, `br`, `section`, `h1`, `h2`, `h3`, `div`, `button`, `footer`, and `main`.
+- **Allowed attributes**: `id`, `class`, `aria-*`, `data-*`, `type` on buttons, and `href` on links. Link URLs must be `https://`, `http://`, `mailto:`, root/relative paths, or `#anchors`.
+- **Always forbidden**: `script`, `style`, `iframe`, `object`, `embed`, `link`, inline `style`, event handler attributes such as `onclick`, `javascript:` URLs, and `data:` URLs in generated content.
 
 ## Quality Standards
 
@@ -152,7 +160,7 @@ See [`reference/edge-cases.md`](reference/edge-cases.md) for monorepos, repos wi
 - [ ] Mermaid block renders (if CDN unreachable, fallback message is visible).
 - [ ] Large architecture diagrams remain readable: zoom controls are present, reset works, and the diagram can scroll horizontally/vertically inside its viewport.
 - [ ] If `code-review-graph` MCP was available, `list_graph_stats_tool` was invoked first and graph coverage was compared with the repo file count before graph data was used.
-- [ ] When representative MCP graph data was available, the Hub rank column and graph summary note in the HTML are populated from graph data (not inferred from folder names) and explain the metrics in plain English. When graph coverage was low, graph-derived summary and hub ranks are omitted.
+- [ ] When representative MCP graph data was available, the graph summary note is populated from graph data and explains the metrics in plain English. The Hub rank column is present only when representative graph hub data was available. When graph coverage was low, graph-derived summary and hub ranks are omitted.
 - [ ] Meta tags `repo-study-guide-commit` and `repo-study-guide-generated` are present and populated.
 - [ ] Onboarding Path: every file in the reading order exists in the repo, and every first task references real code with a verifiable done-criterion.
 - [ ] Initial/full generation: `{{WHAT_CHANGED}}` was replaced with an empty string (no leftover placeholder, no empty section).

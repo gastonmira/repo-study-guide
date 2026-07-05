@@ -16,6 +16,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: npm
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -31,4 +32,6 @@ jobs:
           key: puppeteer-${{ runner.os }}
 
       - name: Run PR checks
-        run: bash scripts/pr-checks.sh
+        run: |
+          npm ci
+          npm run check
