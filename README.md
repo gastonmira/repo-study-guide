@@ -119,6 +119,21 @@ Edit `templates/study_guide_template.html` to change theme, layout, or sections.
 
 To change the output directory, ask the skill explicitly: *"generate the study guide into `wiki/` instead of `docs/`"*.
 
+## Development checks
+
+Install the locked check dependencies, then run the local validation suite:
+
+```bash
+npm ci
+npm run check
+```
+
+The checks validate YAML/JSON, Markdown links, template/sample HTML structure,
+placeholder coverage, generated HTML safety, and the sample Mermaid diagram.
+`@mermaid-js/mermaid-cli` uses Puppeteer and may download Chromium during
+`npm ci`; this can make the first install noticeably heavier than subsequent
+cached runs.
+
 ## Token efficiency
 
 Analyzing an unfamiliar repo can burn a lot of tokens if the agent re-reads every file it touches. The skill keeps the bill low through two complementary mechanisms:

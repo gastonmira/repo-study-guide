@@ -18,11 +18,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
-
       # Cache the Chromium that mermaid-cli (puppeteer) downloads so we don't
       # re-fetch it on every run.
       - name: Cache puppeteer browsers
